@@ -1,0 +1,92 @@
+import pandas as pd
+import numpy as np
+
+from sklearn import metrics
+from functools import reduce
+from  sklearn.metrics  import  roc_auc_score
+from sklearn.utils import resample
+from sklearn.model_selection import train_test_split # Import train_test_split function
+from datetime import timedelta
+from datetime import date
+from sklearn.metrics import confusion_matrix
+data=pd.read_csv('C:/Users/fgeba/Downloads/creditcard.csv',sep=",")
+
+
+
+positive = data[data["Class"]== 1]
+negative = data[data["Class"]== 0]
+
+
+print("positive:{}".format(len(positive)))
+print("negative:{}".format(len(negative)))
+
+new_data = pd.concat([positive,negative[:40000]])
+
+X = new_data.drop(['Time','Class'], axis=1)
+y = new_data['Class']
+
+X_train, X_test, y_train,y_test = train_test_split(X,y, test_size = 0.2, stratify=y, random_state=42 )
+
+outliers_fraction = 0.05
+
+from pyod.models.knn import KNN
+clf_name = 'KNN'
+clf = KNN(method='mean')
+clf.fit(X_train.values)
+
+y_train_pred = clf.predict(X_test)
+
+print(confusion_matrix(y_test, y_train_pred))
+
+from pyod.models.pca import PCA
+clf_name = 'PCA'
+clf = PCA(standardization=True,contamination = outliers_fraction)
+clf.fit(X_train.values)
+
+y_train_pred = clf.predict(X_test)
+print('pca')
+print(confusion_matrix(y_test, y_train_pred))
+
+
+
+
+
+from pyod.models.cblof import CBLOF
+clf_name = 'CBLOF'
+clf = CBLOF(contamination = outliers_fraction)
+clf.fit(X_train.values)
+
+y_train_pred = clf.predict(X_test)
+print('CBLOF')
+print(confusion_matrix(y_test, y_train_pred))
+
+
+from pyod.models.iforest import IForest
+clf_name = 'IForest'
+clf = IForest(contamination = outliers_fraction)
+clf.fit(X_train.values)
+print('IForest')
+y_train_pred = clf.predict(X_test)
+
+print(confusion_matrix(y_test, y_train_pred))
+
+
+from pyod.models.hbos import HBOS
+clf_name = 'HBOS'
+clf = HBOS(contamination = outliers_fraction)
+clf.fit(X_train.values)
+
+y_train_pred = clf.predict(X_test)
+print('HBOS')
+print(confusion_matrix(y_test, y_train_pred))
+
+
+
+from pyod.models.ocsvm import OCSVM
+clf_name = 'OCSVM '
+clf = OCSVM (contamination = outliers_fraction)
+clf.fit(X_train.values)
+
+y_train_pred = clf.predict(X_test)
+print('OCSVM ')
+print(confusion_matrix(y_test, y_train_pred))
